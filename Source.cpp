@@ -1,13 +1,13 @@
 #define _CRT_SECURE_NO_WARNINGS 1
 #include <vector>
-
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include "stb_image_write.h"
-
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
-
+#include "objloader.h"
 #include "scene.h"
+#include "Vector.h"
+#include "Object.h"
 
 #define _USE_MATH_DEFINES
 #include <math.h>
@@ -16,7 +16,8 @@
 #include <iostream>
 #include <omp.h>
 
-
+std::default_random_engine engine[8];
+std::uniform_real_distribution<double> uniform(0, 1);
 
 int main() {
     // taille de l'image
@@ -34,25 +35,36 @@ int main() {
     // initialisation de la scene
     double R = 1;
     // Sphere(position, rayon, couleur(R, G, B), is_speculaire, is_transparent, indice)
-    Sphere slum(L, R, Vector(1., 1., 1.), false, false, false);
-    Sphere s1(Vector(0., 0., 5.), 10, Vector(1, 1, 1), false, false); // centre
-    Sphere s1bis(Vector(15., 15., -25.), 10, Vector(1, 1, 1), false, false); // centre2
-    Sphere s2(Vector(0., -1000., 0.), 980, Vector(1, 0, 0), false, false); // sol
-    Sphere s3(Vector(0., 1000., 0.), 940, Vector(0.5, 1, 1), false, false); // plafond
-    Sphere s4(Vector(0., 0., -1000.), 940, Vector(0, 1, 0), false, false); // fond
-    Sphere s5(Vector(1000., 0., 0.), 950, Vector(0, 0, 1), false, false); // droite
-    Sphere s6(Vector(-1000., 0., 0.), 950, Vector(0, 0.5, 0.5), false, false); // gauche
-    Sphere s7(Vector(0., 0., 1000), 940, Vector(1, 1, 1), false, false); // arrière
-    std::vector<Sphere> vec;
-    vec.push_back(slum);
-    vec.push_back(s1);
-    vec.push_back(s1bis);
-    vec.push_back(s2);
-    vec.push_back(s3);
-    vec.push_back(s4);
-    vec.push_back(s5);
-    vec.push_back(s6);
-    vec.push_back(s7);
+    Sphere slum(L, R, Vector(1., 1., 1.));
+    Sphere s1(Vector(0., 0., 5.), 10, Vector(1, 1, 1)); // centre
+    Sphere s1bis(Vector(15., 15., -25.), 10, Vector(1, 1, 1)); // centre2
+    Sphere s2(Vector(0., -1000., 0.), 980, Vector(1, 0, 0)); // sol
+    Sphere s3(Vector(0., 1000., 0.), 940, Vector(0.5, 1, 1)); // plafond
+    Sphere s4(Vector(0., 0., -1000.), 940, Vector(0, 1, 0)); // fond
+    Sphere s5(Vector(1000., 0., 0.), 950, Vector(0, 0, 1)); // droite
+    Sphere s6(Vector(-1000., 0., 0.), 950, Vector(0, 0.5, 0.5)); // gauche
+    Sphere s7(Vector(0., 0., 1000), 940, Vector(1, 1, 1)); // arrière
+
+    //Triangle tri(Vector(-10, -10, -20), Vector(10, -10, -20), Vector(0, 10, -20), Vector(1, 0, 0));
+    Triangle tri(Vector(-5, -5, 0), Vector(5, -5, 0), Vector(0, 5, 0), Vector(1, 1, 1));
+
+    Geometry Mesh("cube/cube.obj", 1., Vector(0., 0., 0.));
+
+    std::vector<Object*> vec;
+    vec.push_back(&Mesh);
+    //std::vector<Sphere> vec;
+    //vec.push_back(&slum);
+    //vec.push_back(&s1);
+    //vec.push_back(&s1bis);
+    //vec.push_back(&s2);
+    //vec.push_back(&s3);
+    vec.push_back(&s4);
+    //vec.push_back(&s5);
+    //vec.push_back(&s6);
+    //vec.push_back(&s7);
+
+    vec.push_back(&tri);
+
     Scene scene(vec, slum, intensiteL);
 
     // plan de visualisation
@@ -89,7 +101,6 @@ int main() {
 
                 color += getColor(scene, ray, 5) * (1 / n_ray);
             } 
-            //Vector color = getColor_withTransparency(scene, ray);
 
             image[(i * W + j) * 3 + 0] = std::min(255., std::max(0., std::pow(color[0], 1 / 2.2)));
             image[(i * W + j) * 3 + 1] = std::min(255., std::max(0., std::pow(color[1], 1 / 2.2)));
