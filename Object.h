@@ -21,7 +21,10 @@ public:
         n = indice;
     };
 
-    bool intersect(const Ray& r, Vector& N, Vector& P, double& t) const {};
+    bool intersect(const Ray& r, Vector& N, Vector& P, double& t) const;
+    bool intersect(const Ray& r, Vector& N, Vector& P, double& t, double& alpha, double& beta, double& gamma) const;
+
+    Vector A, B, C;
 };
 
 class Sphere : public Object {
@@ -33,5 +36,8 @@ public:
         n = indice;
     };
 
-    bool intersect(const Ray& r, Vector& N, Vector& P, double& t) const {};
+    bool intersect(const Ray& r, Vector& N, Vector& P, double& t) const;
+
+    Vector O;
+    double R;
 };
