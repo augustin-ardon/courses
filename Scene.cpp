@@ -8,13 +8,13 @@
 #include "Scene.h"
 #include "ompsetup.h"
 
-bool Scene::intersect(const Ray& r, Vector& N, Vector& P, int& obj_id) {
+bool Scene::intersect(const Ray& r, Vector& N, Vector& P, int& obj_id, Vector& color) {
     double t = 1E99;
     bool intersection = false;
     for (int i = 0; i < Objects.size(); i++) {
-        Vector localN, localP;
+        Vector localN, localP, localColor;
         double localt;
-        bool local_intersection = Objects[i]->intersect(r, localN, localP, localt);
+        bool local_intersection = Objects[i]->intersect(r, localN, localP, localt, localColor);
         if (local_intersection) {
             intersection = true;
             if (localt < t) {
@@ -22,6 +22,7 @@ bool Scene::intersect(const Ray& r, Vector& N, Vector& P, int& obj_id) {
                 P = localP;
                 N = localN;
                 obj_id = i;
+                color = localColor;
             }
         }
     }
@@ -86,8 +87,8 @@ Vector getColor(Scene scene, Ray ray, int numero_rebond) {
     //double intensiteL = scene.intensite_lumiere;
 
     int obj_id; // sphere la plus proche intersectée par le rayon
-    Vector n, p; // point d'intersection et normale à la sphère en ce point
-    if (scene.intersect(ray, n, p, obj_id)) {
+    Vector n, p, albedo; // point d'intersection et normale à la sphère en ce point
+    if (scene.intersect(ray, n, p, obj_id, albedo)) {
         // partie réflechie
         if (scene.Objects[obj_id]->is_speculaire) {
             Vector epsilon = n * 1E-10;
@@ -120,18 +121,19 @@ Vector getColor(Scene scene, Ray ray, int numero_rebond) {
             double costhetaseconde = std::max(0., dot(randSdir, l));
 
             Ray new_ray(p + epsilon, wi); // nouveau rayon issu du point P allant vers la source de lumière
-            Vector new_n, new_p;
+            Vector new_n, new_p, new_color;
             int new_id;
 
-            if (!(scene.intersect(new_ray, new_n, new_p, new_id)) or (d2 * 0.99 < (new_p - p).getNorm2())) {
-                color = scene.Objects[obj_id]->albedo * (1 / (4 * M_PI * d2 * costhetaseconde)) * costheta * costhetaprime * scene.intensite_lumiere;
+            if (!(scene.intersect(new_ray, new_n, new_p, new_id, new_color)) or (d2 * 0.99 < (new_p - p).getNorm2())) {
+                //std::cout << albedo[0] << ";" << albedo[1] << ";" << albedo[2] << std::endl;
+                color = albedo * (1 / (4 * M_PI * d2 * costhetaseconde)) * costheta * costhetaprime * scene.intensite_lumiere;
             }
 
             // éclairage indirect
             Vector random_u = random_cos(n);
             Ray random_ray(p + epsilon, random_u);
 
-            color += getColor(scene, random_ray, numero_rebond - 1) * scene.Objects[obj_id]->albedo;
+            color += getColor(scene, random_ray, numero_rebond - 1) * albedo;
         }
     }
     return color;

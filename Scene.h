@@ -10,7 +10,7 @@ public:
     Sphere* lumiere;
     double intensite_lumiere;
 
-    bool intersect(const Ray& r, Vector& N, Vector& P, int& sphere_id);
+    bool intersect(const Ray& r, Vector& N, Vector& P, int& sphere_id, Vector& color);
 };
 
 Ray reflect(Ray r, Vector normal, Vector intersect);

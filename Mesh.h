@@ -48,7 +48,7 @@ public:
         build_bvh(&bvh, 0, indices.size());
     };
 
-    bool intersect(const Ray& r, Vector& N, Vector& P, double& t) const;
+    bool intersect(const Ray& r, Vector& N, Vector& P, double& t, Vector& color) const;
     BBox build_bbox(int i0, int i1);
     void build_bvh(BVH* bvh, int i0, int i1);
 

@@ -18,7 +18,7 @@ int main() {
     // taille de l'image
     int W = 512;
     int H = 512;
-    double n_ray = 20;
+    double n_ray = 120;
 
     // source de la lumière
     Vector L(-10., 20., 40);
@@ -43,7 +43,7 @@ int main() {
     Triangle tri(Vector(-5, -5, 0), Vector(5, -5, 0), Vector(0, 5, 0), Vector(1, 1, 1));
     
     //Mesh cube("cube/cube.obj", 0.5, Vector(25., .0, .0), Vector(1., 1., 1.));
-    Mesh girl("BeautifulGirl.obj", 25., Vector(0., -20, 0.), Vector(1., 1., 1.));
+    Mesh girl("Model/Beautiful Girl.obj", 25., Vector(0., -20, 0.), Vector(1., 1., 1.));
 
     std::vector<Object*> vec;
 

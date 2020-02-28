@@ -4,7 +4,7 @@
 class Object {
 public:
     Object() {};
-    virtual bool intersect(const Ray& r, Vector& N, Vector& P, double& t) const = 0;
+    virtual bool intersect(const Ray& r, Vector& N, Vector& P, double& t, Vector& color) const = 0;
 
     Vector albedo;
     bool is_speculaire;
@@ -21,8 +21,8 @@ public:
         n = indice;
     };
 
-    bool intersect(const Ray& r, Vector& N, Vector& P, double& t) const;
-    bool intersect(const Ray& r, Vector& N, Vector& P, double& t, double& alpha, double& beta, double& gamma) const;
+    bool intersect(const Ray& r, Vector& N, Vector& P, double& t, Vector& color) const;
+    bool intersect(const Ray& r, Vector& N, Vector& P, double& t, Vector& color, double& alpha, double& beta, double& gamma) const;
 
     Vector A, B, C;
 };
@@ -36,7 +36,7 @@ public:
         n = indice;
     };
 
-    bool intersect(const Ray& r, Vector& N, Vector& P, double& t) const;
+    bool intersect(const Ray& r, Vector& N, Vector& P, double& t, Vector& color) const;
 
     Vector O;
     double R;
