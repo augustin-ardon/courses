@@ -35,11 +35,12 @@ public:
 class Mesh : public Object {
 public:
     Mesh() {};
-    Mesh(const char* obj, double scaling, const Vector& offset, const Vector& couleur, bool speculaire = false, bool transparent = false, double indice = 1) {
+    Mesh(const char* obj, double scaling, const Vector& offset, const Vector& couleur, bool textures=true, bool speculaire = false, bool transparent = false, double indice = 1) : has_textures(textures) {
         albedo = couleur;
         is_speculaire = speculaire;
         is_transparent = transparent;
         n = indice;
+
         readOBJ(obj);
         for (int i = 0; i < vertices.size(); i++) {
             vertices[i] = vertices[i] * scaling + offset;
@@ -47,8 +48,9 @@ public:
 
         build_bvh(&bvh, 0, indices.size());
     };
+    bool has_textures;
 
-    bool intersect(const Ray& r, Vector& N, Vector& P, double& t, Vector& color) const;
+    Intersection intersect(const Ray& r) const;
     BBox build_bbox(int i0, int i1);
     void build_bvh(BVH* bvh, int i0, int i1);
 

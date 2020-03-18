@@ -1,10 +1,20 @@
 #pragma once
 #include "Vector.h"
 
+class Intersection {
+public:
+    Intersection(bool inter, Vector paramN, Vector paramP, Vector col, double paramt, int paramid=0) : intersection(inter), N(paramN), P(paramP), color(col), t(paramt), obj_id(paramid) {};
+
+    bool intersection;
+    Vector N, P, color;
+    double t;
+    int obj_id;
+};
+
 class Object {
 public:
     Object() {};
-    virtual bool intersect(const Ray& r, Vector& N, Vector& P, double& t, Vector& color) const = 0;
+    virtual Intersection intersect(const Ray& r) const = 0;
 
     Vector albedo;
     bool is_speculaire;
@@ -21,8 +31,8 @@ public:
         n = indice;
     };
 
-    bool intersect(const Ray& r, Vector& N, Vector& P, double& t, Vector& color) const;
-    bool intersect(const Ray& r, Vector& N, Vector& P, double& t, Vector& color, double& alpha, double& beta, double& gamma) const;
+    Intersection intersect(const Ray& r) const;
+    Intersection intersect(const Ray& r, double& alpha, double& beta, double& gamma) const;
 
     Vector A, B, C;
 };
@@ -36,7 +46,7 @@ public:
         n = indice;
     };
 
-    bool intersect(const Ray& r, Vector& N, Vector& P, double& t, Vector& color) const;
+    Intersection intersect(const Ray& r) const;
 
     Vector O;
     double R;

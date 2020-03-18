@@ -25,10 +25,9 @@ bool BBox::intersect(const Ray& r) const {
 }
 
 
-bool Mesh::intersect(const Ray& r, Vector& N, Vector& P, double& t, Vector& color) const {
-    if (!bvh.bbox.intersect(r)) return false;
-
-    bool intersection = false;
+Intersection Mesh::intersect(const Ray& r) const {
+    Intersection inter(false, Vector(0., 0., 0.), Vector(0., 0., 0.), Vector(0., 0., 0.), 1E99);
+    if (!bvh.bbox.intersect(r)) return inter;
 
     std::list<const BVH*> l;
     l.push_front(&bvh);
@@ -46,35 +45,39 @@ bool Mesh::intersect(const Ray& r, Vector& N, Vector& P, double& t, Vector& colo
 
         if (!current->node_r) {
             for (int i = current->i0; i < current->i1; ++i) {
-                Vector localN, localP, new_col;
-                double localt;
                 int i1 = indices[i].vtxi;
                 int i2 = indices[i].vtxj;
                 int i3 = indices[i].vtxk;
                 Triangle tri(vertices[i1], vertices[i2], vertices[i3], albedo);
+                 
                 double alpha, beta, gamma;
-                if (tri.intersect(r, localN, localP, localt, new_col, alpha, beta, gamma)) {
-                    intersection = true;
-                    if (localt < t) {
-                        t = localt;
-                        P = localP;
-                        N = (normals[indices[i].ni] * alpha + normals[indices[i].nj] * beta + normals[indices[i].nk] * gamma).normalize();
+                Intersection local_intersect = tri.intersect(r, alpha, beta, gamma);
+                if (local_intersect.intersection) {
+                    inter.intersection = true;
+                    if (local_intersect.t < inter.t) {
+                        inter.t = local_intersect.t;
+                        inter.P = local_intersect.P;
+                        inter.N = (normals[indices[i].ni] * alpha + normals[indices[i].nj] * beta + normals[indices[i].nk] * gamma).normalize();
                         
-                        int texture_id = indices[i].faceGroup;
-                        int x = (uvs[indices[i].uvi][0] * alpha + uvs[indices[i].uvj][0] * beta + uvs[indices[i].uvk][0] * gamma) *(w[texture_id]-1);
-                        int y = (uvs[indices[i].uvi][1] * alpha + uvs[indices[i].uvj][1] * beta + uvs[indices[i].uvk][1] * gamma) *(h[texture_id]-1);
-                        //std::cout << i << ";" << x << ";" << y << " ; " << (x+y)*3 << ";" << texture_id << ";" << textures[texture_id].size() << std::endl;
-                        double comp_red = (textures[texture_id][(y * w[texture_id] + x) * 3]) / 255.;
-                        double comp_green = (textures[texture_id][(y * w[texture_id] +  x) * 3 + 1]) / 255.;
-                        double comp_blue = (textures[texture_id][(y * w[texture_id] + x) * 3 + 2]) / 255.;
+                        if (has_textures) {
+                            int texture_id = indices[i].faceGroup;
+                            int x = (uvs[indices[i].uvi][0] * alpha + uvs[indices[i].uvj][0] * beta + uvs[indices[i].uvk][0] * gamma) * (w[texture_id] - 1);
+                            int y = (uvs[indices[i].uvi][1] * alpha + uvs[indices[i].uvj][1] * beta + uvs[indices[i].uvk][1] * gamma) * (h[texture_id] - 1);
 
-                        color = Vector(comp_red, comp_green, comp_blue);
+                            double comp_red = (textures[texture_id][(y * w[texture_id] + x) * 3]) / 255.;
+                            double comp_green = (textures[texture_id][(y * w[texture_id] + x) * 3 + 1]) / 255.;
+                            double comp_blue = (textures[texture_id][(y * w[texture_id] + x) * 3 + 2]) / 255.;
+
+                            inter.color = Vector(comp_red, comp_green, comp_blue);
+                        } else {
+                            inter.color = albedo;
+                        }
                     }
                 }
             }
         }
     }
-    return intersection;
+    return inter;
 };
 
 BBox Mesh::build_bbox(int i0, int i1) {
@@ -325,19 +328,20 @@ void Mesh::readOBJ(const char* obj) {
     }
     fclose(f);
     err = fopen_s(&f, (std::string("Model/") + std::string(matfile)).c_str(), "r");
-    std::string toto = (std::string("Model/") + std::string(matfile));
-    while (!feof(f))
-    {
-        char line[255];
-        fgets(line, 255, f);
-        if (line[0] == 'm' && line[4] == 'K' && line[5] == 'd')
+    if (err == 0) {
+        while (!feof(f))
         {
-            char texturefile[255];
-            sscanf_s(line, "map_Kd %100s\r\n", texturefile, 255);
-            add_texture((std::string("Model/textures/") + std::string(texturefile).replace(std::strlen(texturefile) - 4, 4, ".bmp")).c_str());
+            char line[255];
+            fgets(line, 255, f);
+            if (line[0] == 'm' && line[4] == 'K' && line[5] == 'd')
+            {
+                char texturefile[255];
+                sscanf_s(line, "map_Kd %100s\r\n", texturefile, 255);
+                add_texture((std::string("Model/textures/") + std::string(texturefile).replace(std::strlen(texturefile) - 4, 4, ".bmp")).c_str());
+            }
         }
+        fclose(f);
     }
-    fclose(f);
 };
 
 void Mesh::add_texture(const char* filename) {

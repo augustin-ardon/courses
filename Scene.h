@@ -10,15 +10,17 @@ public:
     Sphere* lumiere;
     double intensite_lumiere;
 
-    bool intersect(const Ray& r, Vector& N, Vector& P, int& sphere_id, Vector& color);
+    Intersection intersect(const Ray& r);
 };
 
 Ray reflect(Ray r, Vector normal, Vector intersect);
 
-Ray refract(Ray r, Vector normal, Vector intersect, double n1, double n2, bool& is_refracted);
+Ray refract(Ray r, Vector normal, Vector intersect, double n1, double n2);
 
 Vector random_cos(const Vector& n);
 
 Vector getColor(Scene scene, Ray ray, int numero_rebond);
+
+Vector reflect_vect(Vector inc, Vector norm);
 
 double get_random();
